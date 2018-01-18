@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lykke.Job.ExchangeHealthControl.Core\Lykke.Job.ExchangeHealthControl.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Lykke.Common" Version="4.1.0" />
+    <PackageReference Include="Lykke.MarginTrading.DataReaderClient" Version="1.0.14" />
+    <PackageReference Include="Lykke.MarginTrading.MarketMaker.Contracts" Version="1.0.12" />
+    <PackageReference Include="Lykke.MarginTrading.RiskManagement.HedgingService.Contracts" Version="1.2.13" />
+    <PackageReference Include="Lykke.Service.ExchangeConnector.Client" Version="1.0.6" />
+  </ItemGroup>
+</Project>
