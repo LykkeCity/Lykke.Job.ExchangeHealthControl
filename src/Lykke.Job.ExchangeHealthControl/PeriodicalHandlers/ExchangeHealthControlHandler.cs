@@ -14,7 +14,7 @@ namespace Lykke.Job.ExchangeHealthControl.PeriodicalHandlers
 
         private readonly int _pollingPeriodMilliseconds;
 
-        protected ExchangeHealthControlHandler(
+        public ExchangeHealthControlHandler(
             IExchangeHealthControlService ExchangeHealthControlService,
             ILog log,
             string exchangeName,
