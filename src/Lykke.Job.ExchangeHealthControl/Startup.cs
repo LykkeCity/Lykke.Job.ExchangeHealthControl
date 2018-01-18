@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -6,12 +7,12 @@ using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
-using Lykke.Job.ExchangePolling.Core.Services;
-using Lykke.Job.ExchangePolling.Core.Settings;
-using Lykke.Job.ExchangePolling.Models;
-using Lykke.Job.ExchangePolling.Modules;
-using Lykke.Job.ExchangePolling.PeriodicalHandlers;
-using Lykke.Job.ExchangePolling.RabbitSubscribers;
+using Lykke.Job.ExchangeHealthControl.Core.Services;
+using Lykke.Job.ExchangeHealthControl.Core.Settings;
+using Lykke.Job.ExchangeHealthControl.Models;
+using Lykke.Job.ExchangeHealthControl.Modules;
+using Lykke.Job.ExchangeHealthControl.PeriodicalHandlers;
+using Lykke.Job.ExchangeHealthControl.RabbitSubscribers;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
@@ -20,12 +21,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MoreLinq;
+
 #if azurequeuesub
 using Lykke.JobTriggers.Triggers;
 using System.Threading.Tasks;
 #endif
 
-namespace Lykke.Job.ExchangePolling
+namespace Lykke.Job.ExchangeHealthControl
 {
     public class Startup
     {
@@ -57,20 +60,15 @@ namespace Lykke.Job.ExchangePolling
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                     });
 
-                services.AddSwaggerGen(options => { options.DefaultLykkeConfiguration("v1", "ExchangePolling Job API"); });
+                services.AddSwaggerGen(options => { options.DefaultLykkeConfiguration("v1", "ExchangeHealthControl Job API"); });
 
                 var builder = new ContainerBuilder();
-                var appSettings = Configuration.LoadSettings<ExchangePollingSettings>();
+                var appSettings = Configuration.LoadSettings<ExchangeHealthControlSettings>();
                 
                 Log = CreateLogWithSlack(services, appSettings);
 
-                builder.RegisterModule(new JobModule(appSettings.Nested(x => x.ExchangePollingJob),
+                builder.RegisterModule(new JobModule(appSettings.Nested(x => x.ExchangeHealthControlJob),
                     Environment.IsDevelopment(), Log));
-
-                services.RegisterMtRiskManagementHedgingServiceClient(
-                    appSettings.CurrentValue.ExchangePollingJob.Services.AggregatedHedgingService.Url,
-                    appSettings.CurrentValue.ExchangePollingJob.Services.AggregatedHedgingService.ApiKey,
-                    nameof(ExchangePolling));
 
                 builder.Populate(services);
 
@@ -94,7 +92,7 @@ namespace Lykke.Job.ExchangePolling
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware("ExchangePolling Job", ex => new ErrorResponse
+                app.UseLykkeMiddleware("ExchangeHealthControl Job", ex => new ErrorResponse
                 {
                     ErrorMessage = "Technical problem"
                 });
@@ -130,14 +128,9 @@ namespace Lykke.Job.ExchangePolling
 
                 await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
                 
-                //subscribe on rabbits
-                ApplicationContainer.Resolve<OrderBookSubscriber>().Subscribe(
-                    ApplicationContainer.Resolve<IQuoteService>().HandleQuote);
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                
                 //start periodic handlers
-                ApplicationContainer.Resolve<JfdPollingHandler>().Start();
-                //ApplicationContainer.Resolve<IcmPollingHandler>().Start();
+                ApplicationContainer.Resolve<IEnumerable<ExchangeHealthControlHandler>>()
+                    .ForEach(handler => handler.Start());
                 ApplicationContainer.Resolve<DataSavingHandler>().Start();
                 
                 await Log.WriteMonitorAsync("", Program.EnvInfo, "Started");
@@ -191,14 +184,14 @@ namespace Lykke.Job.ExchangePolling
             }
         }
 
-        private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<ExchangePollingSettings> settings)
+        private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<ExchangeHealthControlSettings> settings)
         {
             var consoleLogger = new LogToConsole();
             var aggregateLogger = new AggregateLogger();
 
             aggregateLogger.AddLog(consoleLogger);
 
-            var dbLogConnectionStringManager = settings.Nested(x => x.ExchangePollingJob.Db.LogsConnString);
+            var dbLogConnectionStringManager = settings.Nested(x => x.ExchangeHealthControlJob.Db.LogsConnString);
             var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
 
             if (string.IsNullOrEmpty(dbLogConnectionString))

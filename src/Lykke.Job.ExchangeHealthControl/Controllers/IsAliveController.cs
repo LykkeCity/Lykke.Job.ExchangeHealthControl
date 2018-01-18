@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Net;
-using Lykke.Job.ExchangePolling.Core.Services;
-using Lykke.Job.ExchangePolling.Models;
+using Lykke.Job.ExchangeHealthControl.Core.Services;
+using Lykke.Job.ExchangeHealthControl.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Lykke.Job.ExchangePolling.Controllers
+namespace Lykke.Job.ExchangeHealthControl.Controllers
 {
     // NOTE: See https://lykkex.atlassian.net/wiki/spaces/LKEWALLET/pages/35755585/Add+your+app+to+Monitoring
     [Route("api/[controller]")]

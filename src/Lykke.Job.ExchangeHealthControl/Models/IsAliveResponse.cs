@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lykke.Job.ExchangePolling.Models
+namespace Lykke.Job.ExchangeHealthControl.Models
 {
     public class IsAliveResponse
     {

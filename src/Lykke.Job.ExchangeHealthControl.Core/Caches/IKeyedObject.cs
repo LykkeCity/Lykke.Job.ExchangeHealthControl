@@ -1,4 +1,4 @@
-﻿namespace Lykke.Job.ExchangePolling.Core.Caches
+﻿namespace Lykke.Job.ExchangeHealthControl.Core.Caches
 {
     public interface IKeyedObject
     {

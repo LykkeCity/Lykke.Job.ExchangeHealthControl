@@ -6,7 +6,7 @@ using Lykke.Job.ExchangeHealthControl.Core.Services;
 
 namespace Lykke.Job.ExchangeHealthControl.PeriodicalHandlers
 {
-    public abstract class ExchangeHealthControlHandler : TimerPeriod
+    public class ExchangeHealthControlHandler : TimerPeriod
     {
         private string ExchangeName { get; }
 

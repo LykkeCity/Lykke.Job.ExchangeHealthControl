@@ -8,12 +8,8 @@
         
         public ServicesSettings Services { get; set; }
         
-        public ExchangeSettings JfdSettings { get; set; }
-        
-        public ExchangeSettings IcmSettings { get; set; }
+        public ExchangePollingSettings ExchangePolling { get; set; }
         
         public int DataSavingPeriodMilliseconds { get; set; }
-        
-        public int QuotesTtlMilliseconds { get; set; }
     }
 }

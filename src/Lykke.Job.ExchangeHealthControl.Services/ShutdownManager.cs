@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Common.Log;
-using Lykke.Job.ExchangePolling.Core.Services;
+using Lykke.Job.ExchangeHealthControl.Core.Services;
 
-namespace Lykke.Job.ExchangePolling.Services
+namespace Lykke.Job.ExchangeHealthControl.Services
 {
     // NOTE: Sometimes, shutdown process should be expressed explicitly. 
     // If this is your case, use this class to manage shutdown.

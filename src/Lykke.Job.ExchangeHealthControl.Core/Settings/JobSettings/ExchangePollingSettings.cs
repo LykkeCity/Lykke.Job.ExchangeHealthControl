@@ -1,6 +1,6 @@
 ﻿namespace Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings
 {
-    public class PollingSettings
+    public class ExchangePollingSettings
     {
         public string[] ExchangeList { get; set; }
         

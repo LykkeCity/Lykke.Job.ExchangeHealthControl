@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Lykke.Job.ExchangePolling.Core;
-using Lykke.Job.ExchangePolling.Core.Caches;
-using Lykke.Job.ExchangePolling.Core.Repositories;
+using Lykke.Job.ExchangeHealthControl.Core;
+using Lykke.Job.ExchangeHealthControl.Core.Caches;
+using Lykke.Job.ExchangeHealthControl.Core.Repositories;
 
-namespace Lykke.Job.ExchangePolling.PeriodicalHandlers
+namespace Lykke.Job.ExchangeHealthControl.PeriodicalHandlers
 {
     public class DataSavingHandler : TimerPeriod
     {

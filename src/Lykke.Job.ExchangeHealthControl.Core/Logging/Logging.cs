@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Lykke.Job.ExchangePolling.Core.Logging
+namespace Lykke.Job.ExchangeHealthControl.Core.Logging
 {
     public static class Logging
     {

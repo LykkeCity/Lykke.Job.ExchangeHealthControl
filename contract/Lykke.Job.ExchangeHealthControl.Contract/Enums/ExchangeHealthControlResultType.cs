@@ -1,8 +1,10 @@
-﻿namespace Lykke.Job.ExchangeHealthControl.Core.Domain.Enums
+namespace Lykke.Job.ExchangeHealthControl.Contract.Enums
 {
-    public enum ExchangeHealthControlResultType
+    public enum ExchangeHealthControlReportType
     {
         Ok,
+        NoPositionData,
+        ExceptionRased,
         
     }
 }

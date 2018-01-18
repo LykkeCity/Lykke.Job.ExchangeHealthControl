@@ -1,4 +1,4 @@
-﻿namespace Lykke.Job.ExchangePolling.Core.Domain.Health
+﻿namespace Lykke.Job.ExchangeHealthControl.Core.Domain.Health
 {
     public class HealthIssue
     {

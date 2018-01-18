@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Lykke.Job.ExchangePolling
+namespace Lykke.Job.ExchangeHealthControl
 {
     internal sealed class Program
     {

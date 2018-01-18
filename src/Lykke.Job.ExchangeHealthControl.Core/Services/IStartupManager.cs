@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Lykke.Job.ExchangePolling.Core.Services
+namespace Lykke.Job.ExchangeHealthControl.Core.Services
 {
     public interface IStartupManager
     {

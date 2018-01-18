@@ -1,9 +1,7 @@
-namespace Lykke.Job.ExchangePolling.Core.Settings.JobSettings
+namespace Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings
 {
     public class RabbitMqSettings
     {
-        public RabbitMQConnectionParams ExchangeConnectorOrder { get; set; }
-        
-        public RabbitMQConnectionParams ExchangeConnectorQuotesBTCUSD { get; set; }
+        public RabbitMQConnectionParams ExchangeConnectorHealthControl { get; set; }
     }
 }

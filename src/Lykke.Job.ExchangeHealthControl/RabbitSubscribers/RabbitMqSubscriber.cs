@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using Autofac;
 using Common;
 using Common.Log;
-using Lykke.Job.ExchangePolling.Contract;
-using Lykke.Job.ExchangePolling.Core.Services;
+using Lykke.Job.ExchangeHealthControl.Contract;
+using Lykke.Job.ExchangeHealthControl.Core.Services;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 
-namespace Lykke.Job.ExchangePolling.RabbitSubscribers
+namespace Lykke.Job.ExchangeHealthControl.RabbitSubscribers
 {
     public class RabbitMqSubscriber<T> : IRabbitMqSubscriber<T>, IDisposable
     {

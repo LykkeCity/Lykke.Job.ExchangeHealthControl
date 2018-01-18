@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Common.Log;
-using Lykke.Job.ExchangePolling.Core.Services;
+using Lykke.Job.ExchangeHealthControl.Core.Services;
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.RabbitMqBroker.Subscriber;
 
-namespace Lykke.Job.ExchangePolling.RabbitPublishers
+namespace Lykke.Job.ExchangeHealthControl.RabbitPublishers
 {
     internal class RabbitMqPublisher<T> : IRabbitMqPublisher<T>, IDisposable
     {

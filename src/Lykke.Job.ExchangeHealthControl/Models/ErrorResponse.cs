@@ -1,4 +1,4 @@
-﻿namespace Lykke.Job.ExchangePolling.Models
+﻿namespace Lykke.Job.ExchangeHealthControl.Models
 {
     public class ErrorResponse
     {

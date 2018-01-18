@@ -1,4 +1,4 @@
-﻿namespace Lykke.Job.ExchangePolling.Core
+namespace Lykke.Job.ExchangeHealthControl.Core
 {
     public static class Constants
     {
@@ -6,7 +6,7 @@
 
         public static string DiffOrderPrefix = "POSITION_CONTROL_POLLING_";
 
-        public static string BlobContainerName = "exchangepollingjob";
+        public static string BlobContainerName = "exchangehealthcontroljob";
         public static string BlobExchangesCache = "ExchangesCache";
     }
 }

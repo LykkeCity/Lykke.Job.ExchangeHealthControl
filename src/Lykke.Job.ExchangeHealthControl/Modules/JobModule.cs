@@ -1,29 +1,31 @@
 ﻿using System;
+using System.Linq;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
-using Lykke.Job.ExchangePolling.AzureRepositories;
-using Lykke.Job.ExchangePolling.Contract;
-using Lykke.Job.ExchangePolling.Core.Caches;
-using Lykke.Job.ExchangePolling.Core.Repositories;
-using Lykke.Job.ExchangePolling.Core.Services;
-using Lykke.Job.ExchangePolling.Core.Settings.JobSettings;
-using Lykke.Job.ExchangePolling.PeriodicalHandlers;
-using Lykke.Job.ExchangePolling.RabbitPublishers;
-using Lykke.Job.ExchangePolling.RabbitSubscribers;
-using Lykke.Job.ExchangePolling.Services;
-using Lykke.Job.ExchangePolling.Services.Caches;
-using Lykke.Job.ExchangePolling.Services.Services;
+using Lykke.Job.ExchangeHealthControl.AzureRepositories;
+using Lykke.Job.ExchangeHealthControl.Contract;
+using Lykke.Job.ExchangeHealthControl.Core.Caches;
+using Lykke.Job.ExchangeHealthControl.Core.Repositories;
+using Lykke.Job.ExchangeHealthControl.Core.Services;
+using Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings;
+using Lykke.Job.ExchangeHealthControl.PeriodicalHandlers;
+using Lykke.Job.ExchangeHealthControl.RabbitPublishers;
+using Lykke.Job.ExchangeHealthControl.RabbitSubscribers;
+using Lykke.Job.ExchangeHealthControl.Services;
+using Lykke.Job.ExchangeHealthControl.Services.Caches;
+using Lykke.Job.ExchangeHealthControl.Services.Services;
 using Lykke.Service.ExchangeConnector.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
+using MoreLinq;
 
-namespace Lykke.Job.ExchangePolling.Modules
+namespace Lykke.Job.ExchangeHealthControl.Modules
 {
     public class JobModule : Module
     {
-        private readonly IReloadingManager<ExchangePollingJobSettings> _settings;
+        private readonly IReloadingManager<ExchangeHealthControlJobSettings> _settings;
         private readonly bool _isDevelopment;
 
         private readonly ILog _log;
@@ -31,7 +33,7 @@ namespace Lykke.Job.ExchangePolling.Modules
         // NOTE: you can remove it if you don't need to use IServiceCollection extensions to register service specific dependencies
         private readonly IServiceCollection _services;
 
-        public JobModule(IReloadingManager<ExchangePollingJobSettings> settings,
+        public JobModule(IReloadingManager<ExchangeHealthControlJobSettings> settings,
             bool isDevelopment, 
             ILog log)
         {
@@ -51,7 +53,7 @@ namespace Lykke.Job.ExchangePolling.Modules
             //  .WithParameter(TypedParameter.From(_settings.Rabbit.ConnectionString))
 
             builder.RegisterInstance(_settings)
-                .As<IReloadingManager<ExchangePollingJobSettings>>()
+                .As<IReloadingManager<ExchangeHealthControlJobSettings>>()
                 .SingleInstance();
             
             builder.RegisterInstance(_log)
@@ -78,20 +80,12 @@ namespace Lykke.Job.ExchangePolling.Modules
                     new GenericBlobRepository(_settings.Nested(x => x.Db.BlobConnString)))
                 .SingleInstance();
 
-            builder.RegisterType<ExchangePollingService>()
-                .As<IExchangePollingService>()
-                .SingleInstance();
-
-            builder.RegisterType<QuoteService>()
-                .As<IQuoteService>()
+            builder.RegisterType<ExchangeHealthControlService>()
+                .As<IExchangeHealthControlService>()
                 .SingleInstance();
 
             builder.RegisterType<ExchangeCache>()
                 .As<IExchangeCache>()
-                .SingleInstance();
-            
-            builder.RegisterType<QuoteCache>()
-                .As<IQuoteCache>()
                 .SingleInstance();
             
             builder.RegisterType<ExchangeConnectorService>()
@@ -108,12 +102,13 @@ namespace Lykke.Job.ExchangePolling.Modules
 
         private void RegisterPeriodicalHandlers(ContainerBuilder builder)
         {
-            builder.RegisterType<JfdPollingHandler>()
-                .WithParameter(TypedParameter.From(_settings.CurrentValue.JfdSettings.PollingPeriodMilliseconds))
-                .SingleInstance();
-            builder.RegisterType<IcmPollingHandler>()
-                .WithParameter(TypedParameter.From(_settings.CurrentValue.IcmSettings.PollingPeriodMilliseconds))
-                .SingleInstance();
+            _settings.CurrentValue.ExchangePolling.ExchangeList.ForEach(exchange =>
+            {
+                builder.RegisterType<ExchangeHealthControlHandler>()
+                    .WithParameter(TypedParameter.From(_settings.CurrentValue.ExchangePolling.PollingPeriodMilliseconds))
+                    .WithParameter(TypedParameter.From(exchange))
+                    .SingleInstance();
+            });
             
             builder.RegisterType<DataSavingHandler>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.DataSavingPeriodMilliseconds))
@@ -122,28 +117,18 @@ namespace Lykke.Job.ExchangePolling.Modules
         
         private void RegisterRabbitMqSubscribers(ContainerBuilder builder)
         {
-            builder.RegisterType<OrderBookSubscriber>()
-                .AsSelf()
-                .SingleInstance()
-                .WithParameters(new[]
-                {
-                    new NamedParameter("connectionString", _settings.CurrentValue.Rabbit.ExchangeConnectorQuotesBTCUSD.ConnectionString),
-                    new NamedParameter("exchangeName", _settings.CurrentValue.Rabbit.ExchangeConnectorQuotesBTCUSD.ExchangeName),
-                    new NamedParameter("queueName", _settings.CurrentValue.Rabbit.ExchangeConnectorQuotesBTCUSD.QueueName),
-                    new NamedParameter("isDurable", false),//!_isDevelopment),
-                    new NamedParameter("log", _log)
-                });
+            
         }
 
         private void RegisterRabbitMqPublishers(ContainerBuilder builder)
         {
-            builder.RegisterType<RabbitMqPublisher<ExecutionReport>>()
-                .As<IRabbitMqPublisher<ExecutionReport>>()
+            builder.RegisterType<RabbitMqPublisher<ExchangeHealthControlReport>>()
+                .As<IRabbitMqPublisher<ExchangeHealthControlReport> >()
                 .SingleInstance()
                 .WithParameters(new[]
                 {
-                    new NamedParameter("connectionString", _settings.CurrentValue.Rabbit.ExchangeConnectorOrder.ConnectionString),
-                    new NamedParameter("exchangeName", _settings.CurrentValue.Rabbit.ExchangeConnectorOrder.ExchangeName),
+                    new NamedParameter("connectionString", _settings.CurrentValue.Rabbit.ExchangeConnectorHealthControl.ConnectionString),
+                    new NamedParameter("exchangeName", _settings.CurrentValue.Rabbit.ExchangeConnectorHealthControl.ExchangeName),
                     new NamedParameter("enabled", true),
                     new NamedParameter("log", _log)
                 });

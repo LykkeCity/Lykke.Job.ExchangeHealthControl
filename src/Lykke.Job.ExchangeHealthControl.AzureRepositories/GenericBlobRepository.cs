@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Blob;
 using Common;
-using Lykke.Job.ExchangePolling.Core;
-using Lykke.Job.ExchangePolling.Core.Repositories;
+using Lykke.Job.ExchangeHealthControl.Core;
+using Lykke.Job.ExchangeHealthControl.Core.Repositories;
 using Lykke.SettingsReader;
 using Newtonsoft.Json;
 
-namespace Lykke.Job.ExchangePolling.AzureRepositories
+namespace Lykke.Job.ExchangeHealthControl.AzureRepositories
 {
     public class GenericBlobRepository : IGenericBlobRepository
     {
@@ -28,26 +28,18 @@ namespace Lykke.Job.ExchangePolling.AzureRepositories
 
         public T Read<T>(string blobContainer, string key)
         {
-            if (!_blobStorage.HasBlobAsync(blobContainer, key).Result)
-                return default(T);
-
-            var data = _blobStorage.GetAsync(blobContainer, key).Result.ToBytes();
-            var str = Encoding.UTF8.GetString(data);
-
-            return JsonConvert.DeserializeObject<T>(str);
+            return ReadAsync<T>(blobContainer, key).Result;
         }
 
         public async Task<T> ReadAsync<T>(string blobContainer, string key)
         {
-            if (_blobStorage.HasBlobAsync(blobContainer, key).Result)
-            {
-                var data = (await _blobStorage.GetAsync(blobContainer, key)).ToBytes();
-                var str = Encoding.UTF8.GetString(data);
+            if (!_blobStorage.HasBlobAsync(blobContainer, key).Result) 
+                return default(T);
+            
+            var data = (await _blobStorage.GetAsync(blobContainer, key)).ToBytes();
+            var str = Encoding.UTF8.GetString(data);
 
-                return JsonConvert.DeserializeObject<T>(str);
-            }
-
-            return default(T);
+            return JsonConvert.DeserializeObject<T>(str);
         }
 
         public async Task Write<T>(string blobContainer, string key, T obj)

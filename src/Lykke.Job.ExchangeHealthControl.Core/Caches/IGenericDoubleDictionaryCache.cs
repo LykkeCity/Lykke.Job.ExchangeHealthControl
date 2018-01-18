@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lykke.Job.ExchangePolling.Core.Caches
+namespace Lykke.Job.ExchangeHealthControl.Core.Caches
 {
     public interface IGenericDoubleDictionaryCache<T>
     {

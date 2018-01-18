@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Lykke.Job.ExchangePolling.Tests
+namespace Lykke.Job.ExchangeHealthControl.Tests
 {
     public class UnitTest1
     {

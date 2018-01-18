@@ -1,4 +1,4 @@
-﻿namespace Lykke.Job.ExchangePolling.Core.Settings.JobSettings
+﻿namespace Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings
 {
     public class DbSettings
     {

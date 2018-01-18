@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lykke.Job.ExchangePolling.Core.Caches;
-using Lykke.Job.ExchangePolling.Core.Domain;
+using Lykke.Job.ExchangeHealthControl.Core.Caches;
+using Lykke.Job.ExchangeHealthControl.Core.Domain;
 using MoreLinq;
 
-namespace Lykke.Job.ExchangePolling.Services.Caches
+namespace Lykke.Job.ExchangeHealthControl.Services.Caches
 {
     /// <summary>
     /// Immutable thread-safe generic cache based on two embedded dictionaries.

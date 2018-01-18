@@ -1,4 +1,4 @@
-namespace Lykke.Job.ExchangePolling.Core.Settings.SlackNotifications
+namespace Lykke.Job.ExchangeHealthControl.Core.Settings.SlackNotifications
 {
     public class SlackNotificationsSettings
     {
