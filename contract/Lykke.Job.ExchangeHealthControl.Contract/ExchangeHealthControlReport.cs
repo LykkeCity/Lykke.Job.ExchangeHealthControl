@@ -19,5 +19,13 @@ namespace Lykke.Job.ExchangeHealthControl.Contract
             Exception = exception;
             IsSuccessful = isSuccessful;
         }
+
+        public override string ToString()
+        {
+            return "Exchange: " + ExchangeName + ", "
+                   + "Request duration ms: " + RequestDurationMilliseconds + ", "
+                   + "Type: " + Type + ", "
+                   + "IsSuccessful: " + IsSuccessful + ", ";
+        }
     }
 }

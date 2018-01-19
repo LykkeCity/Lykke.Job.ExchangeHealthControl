@@ -79,15 +79,18 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
                 type = ExchangeHealthControlReportType.ExceptionRased;
                 await _log.WriteErrorAsync(nameof(ExchangeHealthControlService), nameof(Poll), ex, DateTime.UtcNow);
             }
+
+            var report = new ExchangeHealthControlReport(
+                exchangeName, 
+                requestDuration, 
+                type.ToString(), 
+                exception, 
+                type == ExchangeHealthControlReportType.Ok);
             
             //push result to the rabbit (to be consumed by Hedging)
-            await _exchangeHealthControlReportPublisher.Publish(
-                new ExchangeHealthControlReport(
-                    exchangeName, 
-                    requestDuration, 
-                    type.ToString(), 
-                    exception, 
-                    type == ExchangeHealthControlReportType.Ok));
+            await _exchangeHealthControlReportPublisher.Publish(report);
+
+            await _log.WriteInfoAsync(nameof(ExchangeHealthControlService), nameof(Poll), report.ToString(), DateTime.UtcNow);
         }
     }
 }
