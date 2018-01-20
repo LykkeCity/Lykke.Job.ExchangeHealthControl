@@ -10,6 +10,7 @@ using Lykke.Job.ExchangeHealthControl.Contract.Enums;
 using Lykke.Job.ExchangeHealthControl.Core;
 using Lykke.Job.ExchangeHealthControl.Core.Caches;
 using Lykke.Job.ExchangeHealthControl.Core.Domain;
+using Lykke.Job.ExchangeHealthControl.Core.Repositories;
 using Lykke.Job.ExchangeHealthControl.Core.Services;
 using Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings;
 using Lykke.Job.ExchangeHealthControl.Services.Caches;
@@ -26,6 +27,8 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
         private readonly IExchangeConnectorService _exchangeConnectorService;
 
         private readonly IRabbitMqPublisher<ExchangeHealthControlReport> _exchangeHealthControlReportPublisher;
+
+        private readonly IExchangeHealthControlResultRepository _exchangeHealthControlResultRepository;
         
         private readonly IReloadingManager<ExchangeHealthControlJobSettings> _settings;
 
@@ -38,6 +41,8 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
             
             IRabbitMqPublisher<ExchangeHealthControlReport> exchangeHealthControlReportPublisher,
             
+            IExchangeHealthControlResultRepository exchangeHealthControlResultRepository,
+            
             IReloadingManager<ExchangeHealthControlJobSettings> settings,
             
             ILog log)
@@ -47,6 +52,8 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
             _exchangeConnectorService = exchangeConnectorService;
 
             _exchangeHealthControlReportPublisher = exchangeHealthControlReportPublisher;
+
+            _exchangeHealthControlResultRepository = exchangeHealthControlResultRepository;
 
             _settings = settings;
 
@@ -80,7 +87,7 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
                 await _log.WriteErrorAsync(nameof(ExchangeHealthControlService), nameof(Poll), ex, DateTime.UtcNow);
             }
 
-            var report = new ExchangeHealthControlReport(
+            var report = new ExchangeHealthControlResult(
                 exchangeName, 
                 requestDuration, 
                 type.ToString(), 
@@ -88,9 +95,10 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
                 type == ExchangeHealthControlReportType.Ok);
             
             //push result to the rabbit (to be consumed by Hedging)
-            await _exchangeHealthControlReportPublisher.Publish(report);
+            await _exchangeHealthControlReportPublisher.Publish(ContractMapper.Map<ExchangeHealthControlReport>(report));
 
-            await _log.WriteInfoAsync(nameof(ExchangeHealthControlService), nameof(Poll), report.ToString(), DateTime.UtcNow);
+            //write statistic to table
+            await _exchangeHealthControlResultRepository.InsertOrUpdateAsync(report);
         }
     }
 }
