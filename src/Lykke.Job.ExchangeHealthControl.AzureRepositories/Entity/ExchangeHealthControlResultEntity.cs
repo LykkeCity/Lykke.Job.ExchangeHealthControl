@@ -14,9 +14,9 @@ namespace Lykke.Job.ExchangeHealthControl.AzureRepositories.Entity
         public Exception Exception { get; set; }
         public bool IsSuccessful { get; set; }
 
-        protected override string GetPartitionKey() => nameof(ExchangeHealthControlResult);
+        protected override string GetPartitionKey() => ExchangeName;
 
-        protected override string GetRowKey() => $"{ExchangeName}_{DateTime.UtcNow:s}";
+        protected override string GetRowKey() => $"{DateTime.UtcNow:s}";
         
         
     }

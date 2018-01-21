@@ -2,7 +2,7 @@
 
 namespace Lykke.Job.ExchangeHealthControl.AzureRepositories
 {
-    public class MappableTableEntity<TD, TE> : TableEntity
+    public abstract class MappableTableEntity<TD, TE> : TableEntity
         where TD : class
         where TE : MappableTableEntity<TD, TE>, new()
     {
