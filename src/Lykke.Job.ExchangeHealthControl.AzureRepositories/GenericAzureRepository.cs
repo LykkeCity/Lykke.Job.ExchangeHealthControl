@@ -6,7 +6,7 @@ using AzureStorage;
 
 namespace Lykke.Job.ExchangeHealthControl.AzureRepositories
 {
-    public class GenericAzureRepository<TD, TE> : IGenericAzureRepository<TD, TE>
+    public abstract class GenericAzureRepository<TD, TE> : IGenericAzureRepository<TD, TE>
         where TD : class
         where TE : MappableTableEntity<TD, TE>, new()
     {

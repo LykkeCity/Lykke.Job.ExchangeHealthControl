@@ -10,9 +10,9 @@ namespace Lykke.Job.ExchangeHealthControl.AzureRepositories
         {
         }
 
-        protected virtual string GetPartitionKey() => null;
+        protected abstract string GetPartitionKey();
 
-        protected virtual string GetRowKey() => null;
+        protected abstract string GetRowKey();
 
         public static TE Create(TD domainObject)
         {
