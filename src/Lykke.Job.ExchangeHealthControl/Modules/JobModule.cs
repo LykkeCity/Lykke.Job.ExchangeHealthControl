@@ -76,9 +76,7 @@ namespace Lykke.Job.ExchangeHealthControl.Modules
 
             RegisterRabbitMqPublishers(builder);
 
-            builder.Register<IGenericBlobRepository>(ctx =>
-                    new GenericBlobRepository(_settings.Nested(x => x.Db.BlobConnString)))
-                .SingleInstance();
+            RegisterRepositories(builder);
 
             builder.RegisterType<ExchangeHealthControlService>()
                 .As<IExchangeHealthControlService>()
@@ -98,6 +96,18 @@ namespace Lykke.Job.ExchangeHealthControl.Modules
                 .SingleInstance();
             
             builder.Populate(_services);
+        }
+
+        private void RegisterRepositories(ContainerBuilder builder)
+        {
+            var azureRepoFactory = new AzureRepoFactory(_settings, _log);
+            
+            builder.Register<IGenericBlobRepository>(ctx => azureRepoFactory.GetGenericBlobRepository())
+                .SingleInstance();
+
+            builder.Register<IExchangeHealthControlResultRepository>(ctx =>
+                    azureRepoFactory.GetExchangeHealthControlResultRepository())
+                .SingleInstance();
         }
 
         private void RegisterPeriodicalHandlers(ContainerBuilder builder)

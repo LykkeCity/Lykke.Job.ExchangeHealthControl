@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 
-namespace Lykke.Job.ExchangeHealthControl.Contract
+namespace Lykke.Job.ExchangeHealthControl.Core.Domain
 {
-    public class ExchangeHealthControlReport
+    public class ExchangeHealthControlResult
     {
         public string ExchangeName { get; private set; }
         public int RequestDurationMilliseconds { get; private set; }
@@ -10,7 +10,9 @@ namespace Lykke.Job.ExchangeHealthControl.Contract
         public Exception Exception { get; private set; }
         public bool IsSuccessful { get; private set; }
 
-        public ExchangeHealthControlReport(string exchangeName, int requestDurationMilliseconds, string type,
+        public ExchangeHealthControlResult(){}
+        
+        public ExchangeHealthControlResult(string exchangeName, int requestDurationMilliseconds, string type,
             Exception exception, bool isSuccessful)
         {
             ExchangeName = exchangeName;

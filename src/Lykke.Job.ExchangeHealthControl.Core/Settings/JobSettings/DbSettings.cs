@@ -2,7 +2,9 @@
 {
     public class DbSettings
     {
-        public string BlobConnString { get; set; }
+        public string StorageConnString { get; set; }
         public string LogsConnString { get; set; }
+        
+        public AzureTablesSettings Tables { get; set; }
     }
 }
