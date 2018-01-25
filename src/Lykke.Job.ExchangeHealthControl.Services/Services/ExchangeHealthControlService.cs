@@ -72,19 +72,26 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
             try
             {
                 watch.Start();
-                
-                var requestResult = await _exchangeConnectorService.GetOpenedPositionAsync(exchangeName, tokenSource.Token);
-                
-                requestDuration = (int)watch.ElapsedMilliseconds;
+
+                var requestResult =
+                    await _exchangeConnectorService.GetOpenedPositionAsync(exchangeName, tokenSource.Token);
+
+                requestDuration = (int) watch.ElapsedMilliseconds;
                 type = requestDuration == null
                     ? ExchangeHealthControlReportType.NoPositionData
                     : ExchangeHealthControlReportType.Ok;
+            }
+            catch (OperationCanceledException ex)
+            {
+                exception = ex;
+                type = ExchangeHealthControlReportType.ExceptionRased;
             }
             catch (Exception ex)
             {
                 exception = ex;
                 type = ExchangeHealthControlReportType.ExceptionRased;
-                await _log.WriteErrorAsync(nameof(ExchangeHealthControlService), nameof(Poll), ex, DateTime.UtcNow);
+                await _log.WriteWarningAsync(nameof(ExchangeHealthControlService), nameof(Poll), 
+                    $"Exception occured while polling {exchangeName}.", ex, DateTime.UtcNow);
             }
 
             var report = new ExchangeHealthControlResult(
