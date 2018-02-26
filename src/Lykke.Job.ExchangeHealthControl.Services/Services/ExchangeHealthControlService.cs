@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -33,6 +34,8 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
         private readonly IReloadingManager<ExchangeHealthControlJobSettings> _settings;
 
         private readonly ILog _log;
+
+        private readonly ConcurrentDictionary<string, DateTime> _warningCache = new ConcurrentDictionary<string, DateTime>();
         
         public ExchangeHealthControlService(
             IExchangeCache exchangeCache,
@@ -90,8 +93,15 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
             {
                 exception = ex;
                 type = ExchangeHealthControlReportType.ExceptionRased;
-                await _log.WriteWarningAsync(nameof(ExchangeHealthControlService), nameof(Poll), 
-                    $"Exception occured while polling {exchangeName}.", ex, DateTime.UtcNow);
+
+                if (!_warningCache.TryGetValue(exchangeName, out var lastWarning) ||
+                    DateTime.UtcNow.Subtract(lastWarning).TotalSeconds >
+                    _settings.CurrentValue.FailMessageThrottlingPeriodSeconds)
+                {
+                    _warningCache.AddOrUpdate(exchangeName, DateTime.UtcNow, (e, t) => DateTime.UtcNow);
+                    await _log.WriteWarningAsync(nameof(ExchangeHealthControlService), nameof(Poll),
+                        $"Exception occured while polling {exchangeName}.", ex, DateTime.UtcNow);
+                }
             }
 
             var report = new ExchangeHealthControlResult(
