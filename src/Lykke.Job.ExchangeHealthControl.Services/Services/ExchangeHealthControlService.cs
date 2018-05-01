@@ -36,6 +36,8 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
         private readonly ILog _log;
 
         private readonly ConcurrentDictionary<string, DateTime> _warningCache = new ConcurrentDictionary<string, DateTime>();
+
+        private readonly int _failMessageThrottlingPeriodSec;
         
         public ExchangeHealthControlService(
             IExchangeCache exchangeCache,
@@ -61,6 +63,8 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
             _settings = settings;
 
             _log = log;
+
+            _failMessageThrottlingPeriodSec = _settings.CurrentValue.FailMessageThrottlingPeriodSeconds;
         }
         
         public async Task Poll(string exchangeName, TimeSpan timeout)
@@ -80,7 +84,7 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
                     await _exchangeConnectorService.GetOpenedPositionAsync(exchangeName, tokenSource.Token);
 
                 requestDuration = (int) watch.ElapsedMilliseconds;
-                type = requestDuration == null
+                type = requestResult == null
                     ? ExchangeHealthControlReportType.NoPositionData
                     : ExchangeHealthControlReportType.Ok;
             }
@@ -95,8 +99,7 @@ namespace Lykke.Job.ExchangeHealthControl.Services.Services
                 type = ExchangeHealthControlReportType.ExceptionRased;
 
                 if (!_warningCache.TryGetValue(exchangeName, out var lastWarning) ||
-                    DateTime.UtcNow.Subtract(lastWarning).TotalSeconds >
-                    _settings.CurrentValue.FailMessageThrottlingPeriodSeconds)
+                    DateTime.UtcNow.Subtract(lastWarning).TotalSeconds > _failMessageThrottlingPeriodSec)
                 {
                     _warningCache.AddOrUpdate(exchangeName, DateTime.UtcNow, (e, t) => DateTime.UtcNow);
                     await _log.WriteWarningAsync(nameof(ExchangeHealthControlService), nameof(Poll),
