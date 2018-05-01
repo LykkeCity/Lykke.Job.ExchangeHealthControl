@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Common;
 using Common.Log;
 using Lykke.Job.ExchangeHealthControl.AzureRepositories;
 using Lykke.Job.ExchangeHealthControl.Contract;
@@ -11,10 +13,11 @@ using Lykke.Job.ExchangeHealthControl.Core.Services;
 using Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings;
 using Lykke.Job.ExchangeHealthControl.PeriodicalHandlers;
 using Lykke.Job.ExchangeHealthControl.RabbitPublishers;
-using Lykke.Job.ExchangeHealthControl.RabbitSubscribers;
 using Lykke.Job.ExchangeHealthControl.Services;
 using Lykke.Job.ExchangeHealthControl.Services.Caches;
 using Lykke.Job.ExchangeHealthControl.Services.Services;
+using Lykke.RabbitMqBroker;
+using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.ExchangeConnector.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
@@ -127,7 +130,6 @@ namespace Lykke.Job.ExchangeHealthControl.Modules
         
         private void RegisterRabbitMqSubscribers(ContainerBuilder builder)
         {
-            
         }
 
         private void RegisterRabbitMqPublishers(ContainerBuilder builder)

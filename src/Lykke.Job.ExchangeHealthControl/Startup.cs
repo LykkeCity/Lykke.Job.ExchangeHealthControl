@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -9,11 +10,14 @@ using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Job.ExchangeHealthControl.Core.Services;
 using Lykke.Job.ExchangeHealthControl.Core.Settings;
+using Lykke.Job.ExchangeHealthControl.Core.Settings.JobSettings;
 using Lykke.Job.ExchangeHealthControl.Models;
 using Lykke.Job.ExchangeHealthControl.Modules;
 using Lykke.Job.ExchangeHealthControl.PeriodicalHandlers;
-using Lykke.Job.ExchangeHealthControl.RabbitSubscribers;
 using Lykke.Logs;
+using Lykke.RabbitMqBroker;
+using Lykke.RabbitMqBroker.Publisher;
+using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using MarginTrading.RiskManagement.HedgingService.Contracts.Client;
@@ -128,6 +132,10 @@ namespace Lykke.Job.ExchangeHealthControl
 
                 await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
                 
+                foreach(var num in Enumerable.Range(0, 100))
+                    Subscribe<string>((s) => ApplicationContainer.Resolve<ILog>().WriteInfoAsync(
+                        "Startup", "StartApplication", $"{num} subscriber invocation: {s}."), num);
+                
                 //start periodic handlers
                 ApplicationContainer.Resolve<IEnumerable<ExchangeHealthControlHandler>>()
                     .ForEach(handler => handler.Start());
@@ -140,6 +148,25 @@ namespace Lykke.Job.ExchangeHealthControl
                 await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
                 throw;
             }
+        }
+
+        public void Subscribe<TMessage>(Func<TMessage, Task> handler, int num)
+        {
+            var log = ApplicationContainer.Resolve<ILog>();
+            var subscriptionSettings = new RabbitMqSubscriptionSettings
+            {
+                ConnectionString = "amqp://guest:guest@localhost:5672",
+                QueueName = $"q_{num}",
+                ExchangeName = $"exch_{num}",
+                IsDurable = false,
+            };
+
+            new RabbitMqSubscriber<TMessage>(subscriptionSettings,
+                    new DefaultErrorHandlingStrategy(log, subscriptionSettings))
+                .SetMessageDeserializer(new JsonMessageDeserializer<TMessage>())
+                .SetLogger(log)
+                .Subscribe(handler)
+                .Start();
         }
 
         private async Task StopApplication()

@@ -11,5 +11,7 @@
         public ExchangePollingSettings ExchangePolling { get; set; }
         
         public int DataSavingPeriodMilliseconds { get; set; }
+        
+        public int FailMessageThrottlingPeriodSeconds { get; set; }
     }
 }
