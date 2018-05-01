@@ -4,6 +4,7 @@ using Common.Log;
 using Lykke.Job.ExchangeHealthControl.Core.Services;
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.RabbitMqBroker.Subscriber;
+using Newtonsoft.Json;
 
 namespace Lykke.Job.ExchangeHealthControl.RabbitPublishers
 {
@@ -30,7 +31,10 @@ namespace Lykke.Job.ExchangeHealthControl.RabbitPublishers
 
             _rabbitPublisher = new RabbitMqBroker.Publisher.RabbitMqPublisher<T>(publisherSettings)
                 .DisableInMemoryQueuePersistence()
-                .SetSerializer(new JsonMessageSerializer<T>())
+                .SetSerializer(new JsonMessageSerializer<T>(new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                }))
                 .SetLogger(log)
                 .SetPublishStrategy(new DefaultFanoutPublishStrategy(publisherSettings))
                 .SetConsole(new LogToConsole())
